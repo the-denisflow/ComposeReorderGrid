@@ -1,20 +1,20 @@
-package com.example.composereordergrid.presentation.component.draganddropgrid
+package com.example.composereordergrid.presentation.draganddrop.grid.component
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.layout.boundsInParent
+import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Constraints
+import com.example.composereordergrid.presentation.draganddrop.grid.state.GridState
 import kotlin.math.roundToInt
 
 /**
- * Receiver scope for [Grid]'s content lambda. Its only job is [animatedGridCell]: the
+ * Receiver scope for [Grid]'s content lambda. Its only job is [animateGridCell]: the
  * Modifier.layout math that places a tile in its (column, row) cell and animates it there
  * when its index changes.
  */
@@ -26,9 +26,9 @@ class GridScope internal constructor(
 
     @Composable
     internal fun Modifier.animateGridCell(key: Any, index: Int): Modifier {
-       DisposableEffect(key) {
-           state.removeCellBounds(key)
-       }
+        DisposableEffect(key) {
+           onDispose { state.removeCellBounds(key) }
+        }
 
         val animatedOffset by animateOffsetAsState(
             targetValue = Offset(
@@ -38,7 +38,7 @@ class GridScope internal constructor(
             label = "gridCellOffset"
         )
 
-        return this.layout {  measurable, constraints ->
+        return this.layout { measurable, constraints ->
             val cellWidth = constraints.maxWidth / columns
             val cellHeight = constraints.maxHeight / rows
             val placeable = measurable.measure(Constraints.fixed(cellWidth, cellHeight))
@@ -49,7 +49,7 @@ class GridScope internal constructor(
                 )
             }
         }.onGloballyPositioned {
-            coordinates -> state.setCellBounds(key, coordinates.boundsInParent())
+            coordinates -> state.setCellBounds(key, coordinates.boundsInRoot())
         }
     }
 }

@@ -10,9 +10,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.example.composereordergrid.presentation.component.draganddropgrid.Grid
+import com.example.composereordergrid.data.local.LocalData
+import com.example.composereordergrid.data.model.DemoTile
+import com.example.composereordergrid.presentation.draganddrop.grid.component.Grid
 import com.example.composereordergrid.ui.theme.ComposeReorderGridTheme
 
 class MainActivity : ComponentActivity() {
@@ -21,15 +26,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ComposeReorderGridTheme {
-            val tiles =
-                listOf(
-                    DemoTile(0, "A", Color(0xFFEF5350)),
-                    DemoTile(1, "B", Color(0xFF42A5F5)),
-                    DemoTile(2, "C", Color(0xFF66BB6A)),
-                    DemoTile(3, "D", Color(0xFFFFCA28)),
-                    DemoTile(4, "E", Color(0xFFAB47BC)),
-                    DemoTile(5, "F", Color(0xFF26A69A))
-                )
+            val tiles: List<DemoTile> = remember { LocalData.tiles.toMutableStateList() }
+
                 Grid(
                     modifier = Modifier.fillMaxSize(),
                     items = tiles,
@@ -44,7 +42,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private data class DemoTile(val id: Int, val label: String, val color: Color)
 
 @Composable
 fun ScreenTile(
