@@ -35,7 +35,7 @@ fun <T> Grid(
         GridScope(state = state, columns = columns, rows = rows)
     }
 
-    Box(modifier = modifier, contentAlignment = Alignment.TopCenter) {
+    Box(modifier = modifier, contentAlignment = Alignment.TopStart) {
         items.forEachIndexed { index, item ->
             val retrievedKey = itemKey(item)
             key(retrievedKey) {
