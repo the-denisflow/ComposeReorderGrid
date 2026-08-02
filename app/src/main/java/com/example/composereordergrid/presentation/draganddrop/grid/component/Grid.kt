@@ -27,7 +27,7 @@ fun <T> Grid(
     items: List<T>,
     columns: Int,
     rows: Int,
-    state: GridState = rememberGridState(),
+    state: GridState,
     itemKey: (T) -> Any,
     content: @Composable GridScope.(T) -> Unit
 ) {

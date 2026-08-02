@@ -36,11 +36,11 @@ class DragAndDropState internal constructor(
     private val layoutDirection: LayoutDirection,
     private val gridState: GridState,
     private val onMove: (fromKey: Any, overKey: Any) -> Unit
-): View.OnDragListener {
+) : View.OnDragListener {
     private val STATE_TAG = "DragAndDropState"
 
     var dragShadowBuilder: View.DragShadowBuilder by mutableStateOf(View.DragShadowBuilder())
-    private set
+        private set
 
     var dragItemKey: Any? by mutableStateOf(null)
 
@@ -69,7 +69,7 @@ class DragAndDropState internal constructor(
             density = density,
             layoutDirection = layoutDirection,
             touchPosition = dragItemLocalTouchOffset,
-            size =  localBounds.size
+            size = localBounds.size
         )
 
         localView.startDragAndDrop(
@@ -81,7 +81,28 @@ class DragAndDropState internal constructor(
     }
 
     override fun onDrag(p0: View?, p1: DragEvent?): Boolean {
-        // Todo: Extend logix
+        val event = p1 ?: return true
+        when (event.action) {
+            DragEvent.ACTION_DRAG_LOCATION -> {
+                val fromKey = dragItemKey ?: return true
+                val overKey = gridState.findKeyAt(Offset(event.x, event.y))
+
+
+                if (overKey != null && overKey != fromKey && overKey != lastDragOverKey) {
+                    Log.i(STATE_TAG, "onDrag, move: $fromKey to $overKey")
+
+                    onMove(fromKey, overKey)
+                    lastDragOverKey = overKey
+                } else if (overKey == null || overKey == fromKey) {
+                    lastDragOverKey = null
+                }
+            }
+
+            DragEvent.ACTION_DRAG_ENDED -> {
+                dragItemKey = null
+                lastDragOverKey = null
+            }
+        }
         return true
     }
 }

@@ -1,6 +1,7 @@
 package com.example.composereordergrid.presentation.draganddrop.grid.component
 
 import androidx.compose.animation.core.animateOffsetAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -23,6 +24,8 @@ class GridScope internal constructor(
     private val columns: Int,
     private val rows: Int
 ) {
+    private val animationDuration = 300
+    private val gridCellLabel = "gridCellOffset"
 
     @Composable
     internal fun Modifier.animateGridCell(key: Any, index: Int): Modifier {
@@ -35,7 +38,8 @@ class GridScope internal constructor(
                 (index % columns).toFloat(),
                 (index / columns).toFloat()
             ),
-            label = "gridCellOffset"
+            animationSpec = tween(durationMillis = animationDuration),
+            label = gridCellLabel
         )
 
         return this.layout { measurable, constraints ->
