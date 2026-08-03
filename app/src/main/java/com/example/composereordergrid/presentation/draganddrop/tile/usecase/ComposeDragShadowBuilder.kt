@@ -1,4 +1,4 @@
-package com.example.composereordergrid.presentation.draganddrop.tile.component
+package com.example.composereordergrid.presentation.draganddrop.tile.usecase
 
 import android.graphics.Canvas
 import android.graphics.Point
@@ -12,6 +12,19 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.toSize
 
+/**
+ * Custom DragShadowbuilder that renders Compose as a drag shadow.
+ *
+ * This class bridges Android's View-based drag and drop system with
+ * Compose content that is rendered in GraphicsLayer.
+ *
+ * @param graphicsLayer The graphics layer containing the rendered
+ * composable to display as the drag shadow.
+ * @param density The screen density for converting pixels and dp.
+ * @param layoutDirection The layout direction of the content being rendered.
+ * @param touchPosition The position where the user touched the item.
+ * @param size The size of the content being rendered.
+ */
 class ComposeDragShadowBuilder internal constructor(
     private val graphicsLayer: GraphicsLayer,
     private val density: Density,

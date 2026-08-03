@@ -16,7 +16,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import com.example.composereordergrid.presentation.draganddrop.grid.state.GridState
-import com.example.composereordergrid.presentation.draganddrop.tile.component.ComposeDragShadowBuilder
+import com.example.composereordergrid.presentation.draganddrop.tile.usecase.ComposeDragShadowBuilder
 
 @Composable
 fun rememberDragAndDropState(
@@ -31,6 +31,14 @@ fun rememberDragAndDropState(
     onMove = onMove
 )
 
+/**
+ * Bridges Compose's pointer-based drag gesture to the platform's native
+ * [android.view.DragAndDropPermissions] flow, and drives grid reordering from it.
+ *
+ * A tile starts a native drag via [startDrag]. From then on, this class is registered as the
+ * [View.OnDragListener] on [localView] (the [DraggableArea][com.example.composereordergrid.presentation.draganddrop.DraggableArea]'s
+ * overlay view) and receives every [DragEvent] for the duration of the drag.
+ */
 class DragAndDropState internal constructor(
     private val density: Density,
     private val layoutDirection: LayoutDirection,
@@ -48,6 +56,9 @@ class DragAndDropState internal constructor(
 
     lateinit var localView: View
 
+    /**
+     * Starts a native drag-and-drop operation for the tile identified by [key].
+     */
     fun startDrag(
         key: Any,
         data: DragAndDropTransferData,
@@ -80,6 +91,13 @@ class DragAndDropState internal constructor(
         )
     }
 
+    /**
+     * Handles drag events dispatched to [localView] for the duration of a drag.
+     *
+     * On [DragEvent.ACTION_DRAG_LOCATION], resolves the pointer position to a grid key via
+     * [GridState.findKeyAt] and calls [onMove] the first time it resolves to a new cell other
+     * than the dragged tile itself. On [DragEvent.ACTION_DRAG_ENDED], clears drag state.
+     */
     override fun onDrag(p0: View?, p1: DragEvent?): Boolean {
         val event = p1 ?: return true
         when (event.action) {
