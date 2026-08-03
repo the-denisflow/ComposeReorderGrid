@@ -11,24 +11,32 @@ import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.layer.GraphicsLayer
+import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import com.example.composereordergrid.presentation.draganddrop.grid.state.GridState
+import com.example.composereordergrid.presentation.draganddrop.pagedgrid.usecase.PageFlipState
 import com.example.composereordergrid.presentation.draganddrop.tile.usecase.ComposeDragShadowBuilder
 
 @Composable
 fun rememberDragAndDropState(
     gridState: GridState,
     onMove: (fromKey: Any, toKey: Any) -> Unit,
+    pageFlipState: PageFlipState? = null,
     density: Density = LocalDensity.current,
     layoutDirection: LayoutDirection = LocalLayoutDirection.current
 ): DragAndDropState = DragAndDropState(
     density = density,
     layoutDirection = layoutDirection,
     gridState = gridState,
-    onMove = onMove
+    onMove = onMove,
+    pageFlipState = pageFlipState,
+    // Created here, above/outside any lazily-composed content (e.g. a pager), so it's never
+    // disposed mid-drag - see the shadowLayer doc below for why that matters.
+    shadowLayer = rememberGraphicsLayer()
 )
 
 /**
@@ -43,7 +51,9 @@ class DragAndDropState internal constructor(
     private val density: Density,
     private val layoutDirection: LayoutDirection,
     private val gridState: GridState,
-    private val onMove: (fromKey: Any, overKey: Any) -> Unit
+    private val onMove: (fromKey: Any, overKey: Any) -> Unit,
+    private val pageFlipState: PageFlipState? = null,
+    internal val shadowLayer: GraphicsLayer
 ) : View.OnDragListener {
     private val STATE_TAG = "DragAndDropState"
 
@@ -75,8 +85,17 @@ class DragAndDropState internal constructor(
         dragItemKey = key
         lastDragOverKey = null
 
+
+        shadowLayer.record(
+            density = density,
+            layoutDirection = layoutDirection,
+            size = itemGraphicsLayer.size
+        ) {
+            drawLayer(itemGraphicsLayer)
+        }
+
         dragShadowBuilder = ComposeDragShadowBuilder(
-            graphicsLayer = itemGraphicsLayer,
+            graphicsLayer = shadowLayer,
             density = density,
             layoutDirection = layoutDirection,
             touchPosition = dragItemLocalTouchOffset,
@@ -96,15 +115,17 @@ class DragAndDropState internal constructor(
      *
      * On [DragEvent.ACTION_DRAG_LOCATION], resolves the pointer position to a grid key via
      * [GridState.findKeyAt] and calls [onMove] the first time it resolves to a new cell other
-     * than the dragged tile itself. On [DragEvent.ACTION_DRAG_ENDED], clears drag state.
+     * than the dragged tile itself; also reports the position to [pageFlipState] so it can
+     * auto-advance the page when the pointer sits near a screen edge. On
+     * [DragEvent.ACTION_DRAG_ENDED], clears drag state.
      */
     override fun onDrag(p0: View?, p1: DragEvent?): Boolean {
         val event = p1 ?: return true
         when (event.action) {
             DragEvent.ACTION_DRAG_LOCATION -> {
                 val fromKey = dragItemKey ?: return true
-                val overKey = gridState.findKeyAt(Offset(event.x, event.y))
-
+                val position = Offset(event.x, event.y)
+                val overKey = gridState.findKeyAt(position)
 
                 if (overKey != null && overKey != fromKey && overKey != lastDragOverKey) {
                     Log.i(STATE_TAG, "onDrag, move: $fromKey to $overKey")
@@ -114,11 +135,14 @@ class DragAndDropState internal constructor(
                 } else if (overKey == null || overKey == fromKey) {
                     lastDragOverKey = null
                 }
+
+                pageFlipState?.onDrag(position, localView.width, density)
             }
 
             DragEvent.ACTION_DRAG_ENDED -> {
                 dragItemKey = null
                 lastDragOverKey = null
+                pageFlipState?.onDragEnded()
             }
         }
         return true

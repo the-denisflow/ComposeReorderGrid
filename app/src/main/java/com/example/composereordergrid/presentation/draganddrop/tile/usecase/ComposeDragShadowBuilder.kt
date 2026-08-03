@@ -10,16 +10,17 @@ import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.toSize
 
 /**
  * Custom DragShadowbuilder that renders Compose as a drag shadow.
  *
- * This class bridges Android's View-based drag and drop system with
- * Compose content that is rendered in GraphicsLayer.
+ * This class bridges Android's View-based drag and drop system with a Compose tile's content,
+ * rendered from [graphicsLayer]. [graphicsLayer] must belong to an owner that is never disposed for
+ * the duration of the drag (see [com.example.composereordergrid.presentation.draganddrop.tile.state.DragAndDropState.shadowLayer]) -
+ * otherwise Compose may release and recycle it for a different composable while the drag is still
+ * in progress, which would make the shadow blank or show the wrong tile.
  *
- * @param graphicsLayer The graphics layer containing the rendered
- * composable to display as the drag shadow.
+ * @param graphicsLayer The layer containing the dragged tile's content to display as the drag shadow.
  * @param density The screen density for converting pixels and dp.
  * @param layoutDirection The layout direction of the content being rendered.
  * @param touchPosition The position where the user touched the item.
@@ -35,7 +36,7 @@ class ComposeDragShadowBuilder internal constructor(
     override fun onDrawShadow(canvas: Canvas) {
         CanvasDrawScope().draw(
             density = density,
-            size = graphicsLayer.size.toSize(),
+            size = size,
             layoutDirection = layoutDirection,
             canvas = androidx.compose.ui.graphics.Canvas(canvas)
         ) {

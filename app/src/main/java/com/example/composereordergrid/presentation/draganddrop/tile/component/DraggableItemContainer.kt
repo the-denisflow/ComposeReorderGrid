@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -12,10 +13,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.sourceInformationMarkerEnd
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draganddrop.DragAndDropStartTransferScope
 import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
@@ -32,19 +31,18 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.example.composereordergrid.presentation.draganddrop.tile.state.DragAndDropState
 
-private val tileSize = 80.dp
-
 @Composable
-fun DraggableItemContainer (
+fun DraggableItemContainer(
     key: Any,
-    label: String,
-    color: Color,
-    dragAndDropState: DragAndDropState
+    dragAndDropState: DragAndDropState,
+    clipDataText: String,
+    content: @Composable () -> Unit
+
 ) {
     val itemGraphicsLayer = rememberGraphicsLayer()
     var itemBouns by remember { mutableStateOf(Rect.Zero) }
 
-    LaunchedEffect (Unit) {
+    LaunchedEffect(Unit) {
         dragAndDropState.localView.setOnDragListener(dragAndDropState)
     }
 
@@ -56,19 +54,17 @@ fun DraggableItemContainer (
                 dragAndDropState = dragAndDropState,
                 onBoundsChanged = { itemBouns = it }
             )
-            .background(color)
-            .size(tileSize)
+            .wrapContentSize()
             .detectDragGesture(
                 key = key,
                 dragAndDropState = dragAndDropState,
                 itemBounds = itemBouns,
                 itemGraphicsLayer = itemGraphicsLayer,
-                label
-            )
-        ,
+                label = clipDataText
+            ),
         contentAlignment = Alignment.Center
     ) {
-        Text(label)
+        content()
     }
 }
 
@@ -80,7 +76,7 @@ private fun Modifier.detectDragGesture(
     itemGraphicsLayer: GraphicsLayer,
     label: String
 ): Modifier = this.pointerInput(Unit) {
-    detectDragGesturesAfterLongPress (
+    detectDragGesturesAfterLongPress(
         onDragStart = { offset ->
             startTileDrag(
                 key = key,
@@ -91,7 +87,7 @@ private fun Modifier.detectDragGesture(
                 itemGraphicsLayer = itemGraphicsLayer
             )
         },
-        onDrag = {change, _ ->
+        onDrag = { change, _ ->
             change.consume()
         }
     )
@@ -104,7 +100,7 @@ private fun startTileDrag(
     dragAndDropState: DragAndDropState,
     itemBounds: Rect,
     itemGraphicsLayer: GraphicsLayer
-)  {
+) {
     val clipData = ClipData.newPlainText(label, label)
 
     dragAndDropState.startDrag(
@@ -112,8 +108,7 @@ private fun startTileDrag(
         data = DragAndDropTransferData(
             clipData = clipData,
             localState = label,
-            flags =0
-
+            flags = 0
         ),
         dragItemLocalTouchOffset = offset,
         localBounds = itemBounds,
@@ -143,11 +138,6 @@ private fun Modifier.dragShadowSource(
                 itemGraphicsLayer.record(size) {
                     this@drawWithContent.drawContent()
                 }
-            }
-            dragAndDropState.let { state ->
-                state.localView.updateDragShadow(
-                    state.dragShadowBuilder
-                )
             }
         }
         .onSizeChanged { size = it }
