@@ -6,6 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -27,6 +29,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ComposeReorderGridTheme {
+                val columns = 4
+                val rows = 8
+                val itemsPerPage = columns * rows
                 val tiles: SnapshotStateList<DemoTile> = remember { LocalData.tiles.toMutableStateList() }
                 val gridState = rememberGridState()
                 val dragAndDropState = rememberDragAndDropState(
@@ -38,6 +43,9 @@ class MainActivity : ComponentActivity() {
                         identifier = { it.id }
                     ) }
                 )
+                val pagerState = rememberPagerState(
+                    pageCount = { (tiles.size + itemsPerPage - 1) / itemsPerPage }
+                )
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
@@ -45,22 +53,28 @@ class MainActivity : ComponentActivity() {
                     DraggableArea(
                         dragAndDropState
                     ) {
-                        Grid(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(innerPadding),
-                            items = tiles,
-                            columns = 4,
-                            rows = 8,
-                            state = gridState,
-                            itemKey = { tile -> tile.id }
-                        ) {
-                            DraggableItemContainer(
-                                key = it.id,
-                                label = it.label,
-                                color = it.color,
-                                dragAndDropState = dragAndDropState
-                            )
+                        HorizontalPager(
+                            state = pagerState,
+                            modifier = Modifier.padding(innerPadding).fillMaxSize()
+                        ) { page ->
+                            val pagesTiles = tiles.drop(page * itemsPerPage).take(itemsPerPage)
+                            Grid(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(innerPadding),
+                                items = pagesTiles,
+                                columns = columns,
+                                rows = rows,
+                                state = gridState,
+                                itemKey = { tile -> tile.id }
+                            ) {
+                                DraggableItemContainer(
+                                    key = it.id,
+                                    label = it.label,
+                                    color = it.color,
+                                    dragAndDropState = dragAndDropState
+                                )
+                            }
                         }
                     }
                 }
