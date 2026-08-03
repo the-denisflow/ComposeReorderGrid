@@ -24,3 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "ComposeReorderGrid"
 include(":app")
+include(":reordergrid")
