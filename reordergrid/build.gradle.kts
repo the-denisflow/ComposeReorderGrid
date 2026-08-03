@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 android {
-    namespace = "com.example.reordergrid"
+    namespace = "io.github.thedenisflow.reordergrid"
     compileSdk {
         version = release(37) {
             minorApiLevel = 1

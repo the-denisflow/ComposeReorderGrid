@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.example.composereordergrid.data.local.LocalData
 import com.example.composereordergrid.data.model.DemoTile
 import com.example.composereordergrid.ui.theme.ComposeReorderGridTheme
-import com.example.reordergrid.draganddrop.pagedgrid.component.PagedGrid
+import io.github.thedenisflow.reordergrid.draganddrop.pagedgrid.component.PagedGrid
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
