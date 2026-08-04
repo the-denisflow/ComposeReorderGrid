@@ -1,6 +1,8 @@
 package io.github.thedenisflow.reordergrid.draganddrop.tile.component
 
 import android.content.ClipData
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.wrapContentSize
@@ -119,21 +121,29 @@ private fun Modifier.dragShadowSource(
     onBoundsChanged: (Rect) -> Unit
 ): Modifier {
     var size by remember { mutableStateOf(IntSize.Zero) }
+    var needsShadowCapture by remember { mutableStateOf(false) }
 
     return this
         .onGloballyPositioned { coordinates ->
             onBoundsChanged(coordinates.boundsInParent())
         }
         .graphicsLayer()
+        .pointerInput(key) {
+            awaitEachGesture {
+                awaitFirstDown(requireUnconsumed = false)
+                needsShadowCapture = true
+            }
+        }
         .drawWithContent {
             if (dragAndDropState.dragItemKey != key) {
                 drawContent()
             }
-            if (size.width > 0 && size.height > 0) {
+            if (needsShadowCapture && size.width > 0 && size.height > 0) {
                 itemGraphicsLayer.record(size) {
                     this@drawWithContent.drawContent()
                 }
+                needsShadowCapture = false
             }
         }
-        .onSizeChanged { size = it }
+        .onSizeChanged { size = it; needsShadowCapture = true }
 }

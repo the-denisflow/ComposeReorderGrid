@@ -45,7 +45,6 @@ fun <T> PagedGrid(
     DraggableArea(dragAndDropState) {
         HorizontalPager(
             state = pagerState,
-            beyondViewportPageCount = 1,
             modifier = modifier
         ) { page ->
             val pagesTiles = tiles.drop(page * itemsPerPage).take(itemsPerPage)

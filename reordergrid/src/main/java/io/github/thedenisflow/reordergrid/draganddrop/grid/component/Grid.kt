@@ -1,6 +1,7 @@
 package io.github.thedenisflow.reordergrid.draganddrop.grid.component
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
@@ -31,11 +32,13 @@ fun <T> Grid(
     itemKey: (T) -> Any,
     content: @Composable GridScope.(T) -> Unit
 ) {
-    val scope = remember(state, columns, rows) {
-        GridScope(state = state, columns = columns, rows = rows)
-    }
+    BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.TopStart) {
+        val cellWidth = constraints.maxWidth / columns
+        val cellHeight = constraints.maxHeight / rows
+        val scope = remember(state, columns, cellWidth, cellHeight) {
+            GridScope(state = state, columns = columns, cellWidth = cellWidth, cellHeight = cellHeight)
+        }
 
-    Box(modifier = modifier, contentAlignment = Alignment.TopStart) {
         items.forEachIndexed { index, item ->
             val retrievedKey = itemKey(item)
             key(retrievedKey) {

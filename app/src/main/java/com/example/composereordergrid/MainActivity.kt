@@ -32,7 +32,6 @@ class MainActivity : ComponentActivity() {
             ComposeReorderGridTheme {
                 val columns = 4
                 val rows = 8
-                val itemsPerPage = columns * rows
                 val tiles: SnapshotStateList<DemoTile> =
                     remember { LocalData.tiles.toMutableStateList() }
 
