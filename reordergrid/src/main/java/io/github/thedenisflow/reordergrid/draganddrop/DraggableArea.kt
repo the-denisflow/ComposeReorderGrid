@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import io.github.thedenisflow.reordergrid.draganddrop.tile.state.DragAndDropState
 
 /**
  * Hosts the plain Android View that the drag and drop needs, since [android.view.View.startDragAndDrop]
@@ -19,7 +20,7 @@ import androidx.compose.ui.viewinterop.AndroidView
  */
 @Composable
 fun DraggableArea(
-    dragAndDropState: io.github.thedenisflow.reordergrid.draganddrop.tile.state.DragAndDropState,
+    dragAndDropState: DragAndDropState,
     content: @Composable () -> Unit
 ) {
     AndroidView(

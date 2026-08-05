@@ -44,7 +44,7 @@ fun rememberDragAndDropState(
  * [android.view.DragAndDropPermissions] flow, and drives grid reordering from it.
  *
  * A tile starts a native drag via [startDrag]. From then on, this class is registered as the
- * [View.OnDragListener] on [localView] (the [DraggableArea][com.example.composereordergrid.presentation.draganddrop.DraggableArea]'s
+ * [View.OnDragListener] on [localView] (the [DraggableArea][io.github.thedenisflow.reordergrid.draganddrop.DraggableArea]'s
  * overlay view) and receives every [DragEvent] for the duration of the drag.
  */
 class DragAndDropState internal constructor(
