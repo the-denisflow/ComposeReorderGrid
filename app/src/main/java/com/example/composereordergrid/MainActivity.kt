@@ -46,13 +46,18 @@ class MainActivity : ComponentActivity() {
                         columns = columns,
                         tiles = tiles,
                         tileKeyIdentifier = { tile -> tile.id },
-                        clipDataText = { tile -> tile.label }
-                    ) { tile ->
-                        SampleTile(
+                        clipDataText = { tile -> tile.label },
+                        tileContent = { tile ->  SampleTile(
                             label = tile.label,
                             color = tile.color
-                        )
-                    }
+                        )},
+                        tileShadow = { tile ->
+                            SampleTile(
+                                label = tile.label,
+                                color = Color.Gray
+                            )
+                        }
+                    )
                 }
             }
         }

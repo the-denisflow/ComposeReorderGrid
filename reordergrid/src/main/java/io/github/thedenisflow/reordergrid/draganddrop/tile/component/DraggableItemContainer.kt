@@ -33,11 +33,12 @@ fun DraggableItemContainer(
     key: Any,
     dragAndDropState: DragAndDropState,
     clipDataText: String,
-    content: @Composable () -> Unit
-
+    tileContent: @Composable () -> Unit,
+    tileShadow: (@Composable () -> Unit)? = null
 ) {
     val itemGraphicsLayer = rememberGraphicsLayer()
     var itemBouns by remember { mutableStateOf(Rect.Zero) }
+    var needsShadowCapture by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         dragAndDropState.localView.setOnDragListener(dragAndDropState)
@@ -49,7 +50,9 @@ fun DraggableItemContainer(
                 key = key,
                 itemGraphicsLayer = itemGraphicsLayer,
                 dragAndDropState = dragAndDropState,
-                onBoundsChanged = { itemBouns = it }
+                onBoundsChanged = { itemBouns = it },
+                setNeedsShadowCapture = { needsShadowCapture = it },
+                getNeedsShadowCapture = { needsShadowCapture }
             )
             .wrapContentSize()
             .detectDragGesture(
@@ -61,7 +64,10 @@ fun DraggableItemContainer(
             ),
         contentAlignment = Alignment.Center
     ) {
-        content()
+        if (!needsShadowCapture)
+            tileContent()
+        else
+            (tileShadow ?: tileContent)()
     }
 }
 
@@ -118,10 +124,11 @@ private fun Modifier.dragShadowSource(
     key: Any,
     itemGraphicsLayer: GraphicsLayer,
     dragAndDropState: DragAndDropState,
-    onBoundsChanged: (Rect) -> Unit
+    onBoundsChanged: (Rect) -> Unit,
+    setNeedsShadowCapture: (Boolean) -> Unit,
+    getNeedsShadowCapture: () -> Boolean
 ): Modifier {
     var size by remember { mutableStateOf(IntSize.Zero) }
-    var needsShadowCapture by remember { mutableStateOf(false) }
 
     return this
         .onGloballyPositioned { coordinates ->
@@ -131,19 +138,19 @@ private fun Modifier.dragShadowSource(
         .pointerInput(key) {
             awaitEachGesture {
                 awaitFirstDown(requireUnconsumed = false)
-                needsShadowCapture = true
+                setNeedsShadowCapture(true)
             }
         }
         .drawWithContent {
             if (dragAndDropState.dragItemKey != key) {
                 drawContent()
             }
-            if (needsShadowCapture && size.width > 0 && size.height > 0) {
+            if (getNeedsShadowCapture() && size.width > 0 && size.height > 0) {
                 itemGraphicsLayer.record(size) {
                     this@drawWithContent.drawContent()
                 }
-                needsShadowCapture = false
+                setNeedsShadowCapture(false)
             }
         }
-        .onSizeChanged { size = it; needsShadowCapture = true }
+        .onSizeChanged { size = it; setNeedsShadowCapture(true) }
 }

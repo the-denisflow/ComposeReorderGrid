@@ -23,6 +23,7 @@ fun <T> PagedGrid(
     tileKeyIdentifier: (T) -> Any,
     clipDataText: (T) -> String,
     tileContent: @Composable (T) -> Unit,
+    tileShadow: (@Composable (T) -> Unit)? = null
 ) {
     val itemsPerPage = rows * columns
 
@@ -59,10 +60,10 @@ fun <T> PagedGrid(
                 DraggableItemContainer(
                     key = tileKeyIdentifier(tile),
                     dragAndDropState = dragAndDropState,
-                    clipDataText = clipDataText(tile)
-                ) {
-                    tileContent(tile)
-                }
+                    clipDataText = clipDataText(tile),
+                    tileContent = { tileContent(tile) },
+                    tileShadow = tileShadow?.let { shadow -> { shadow(tile) } }
+                )
             }
         }
     }
