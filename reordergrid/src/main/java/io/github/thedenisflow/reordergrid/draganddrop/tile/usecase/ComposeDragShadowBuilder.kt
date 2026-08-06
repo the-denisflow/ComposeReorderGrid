@@ -9,6 +9,8 @@ import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 
 /**
@@ -16,7 +18,7 @@ import androidx.compose.ui.unit.LayoutDirection
  *
  * This class bridges Android's View-based drag and drop system with a Compose tile's content,
  * rendered from [graphicsLayer]. [graphicsLayer] must belong to an owner that is never disposed for
- * the duration of the drag (see [com.example.composereordergrid.presentation.draganddrop.tile.state.DragAndDropState.shadowLayer]) -
+ * the duration of the drag (see [io.github.thedenisflow.reordergrid.draganddrop.tile.state.DragAndDropState.shadowLayer]) -
  * otherwise Compose may release and recycle it for a different composable while the drag is still
  * in progress, which would make the shadow blank or show the wrong tile.
  *
@@ -45,16 +47,20 @@ class ComposeDragShadowBuilder internal constructor(
     }
 
     override fun onProvideShadowMetrics(outShadowSize: Point?, outShadowTouchPoint: Point?) {
-        with(density) {
-            outShadowSize?.set(
-                size.width.toDp().roundToPx(),
-                size.height.toDp().roundToPx()
-            )
+        val shadowSize = density.roundToShadowSize(size)
+        outShadowSize?.set(shadowSize.width, shadowSize.height)
 
-            outShadowTouchPoint?.set(
-                touchPosition.x.toDp().roundToPx(),
-                touchPosition.y.toDp().roundToPx()
-            )
-        }
+        val shadowTouchPoint = density.roundToShadowTouchPoint(touchPosition)
+        outShadowTouchPoint?.set(shadowTouchPoint.x, shadowTouchPoint.y)
     }
 }
+
+internal fun Density.roundToShadowSize(size: Size): IntSize = IntSize(
+    width = size.width.toDp().roundToPx(),
+    height = size.height.toDp().roundToPx()
+)
+
+internal fun Density.roundToShadowTouchPoint(touchPosition: Offset): IntOffset = IntOffset(
+    x = touchPosition.x.toDp().roundToPx(),
+    y = touchPosition.y.toDp().roundToPx()
+)
