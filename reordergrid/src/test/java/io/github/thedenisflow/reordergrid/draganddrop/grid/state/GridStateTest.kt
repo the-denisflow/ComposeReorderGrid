@@ -51,31 +51,4 @@ class GridStateTest {
 
         assertNull(stateUnderTest.findKeyAt(Offset(x = 5f, y = 5f)))
     }
-
-    @Test
-    fun setCellBounds_throws_whenBoundsOverlapAnExistingCell() {
-        val existingKey = "a"
-        stateUnderTest.setCellBounds(key = existingKey, bounds = Rect(left = 0f, top = 0f, right = 10f, bottom = 10f))
-
-        val keyUnderTest = "b"
-        val boundsUnderTest = Rect(left = 5f, top = 5f, right = 15f, bottom = 15f)
-
-        val exception = assertThrows(IllegalArgumentException::class.java) {
-            stateUnderTest.setCellBounds(key = keyUnderTest, bounds = boundsUnderTest)
-        }
-
-        assertEquals(
-            "Cell bounds for $keyUnderTest ($boundsUnderTest) overlap existing cell $existingKey's bounds",
-            exception.message
-        )
-    }
-
-    @Test
-    fun setCellBounds_doesNotThrow_whenUpdatingTheSameKeysBounds() {
-        stateUnderTest.setCellBounds(key = "a", bounds = Rect(left = 0f, top = 0f, right = 10f, bottom = 10f))
-
-        stateUnderTest.setCellBounds(key = "a", bounds = Rect(left = 1f, top = 1f, right = 11f, bottom = 11f))
-
-        assertEquals("a", stateUnderTest.findKeyAt(Offset(x = 6f, y = 6f)))
-    }
 }

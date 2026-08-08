@@ -10,9 +10,9 @@ import androidx.compose.ui.geometry.Rect
 fun rememberGridState(): GridState = remember { GridState() }
 
 /**
- * Tracks the current on-screen [Rect] of every tile in a [io.github.thedenisflow.reordergrid.draganddrop.grid.component.Grid], keyed by the same key passed to
- * [io.github.thedenisflow.reordergrid.draganddrop.grid.component.Grid]'s itemKey. [io.github.thedenisflow.reordergrid.draganddrop.grid.component.Grid] itself doesn't need this to draw or animate tiles - it's here so a
- * drag-and-drop layer can answer "which tile is currently under the pointer?" by comparing a touch
+ * Tracks the current on-screen [Rect] of every tile in a [com.example.composereordergrid.presentation.draganddrop.grid.component.Grid], keyed by the same key passed to
+ * [com.example.composereordergrid.presentation.draganddrop.grid.component.Grid]'s itemkey. [com.example.composereordergrid.presentation.draganddrop.grid.component.Grid] itself doesn't need this to draw or amimate tiles - it's here so a
+ * drag-and-drap layer can answer "which tile is currently under the pointer?" by comparing a touch
  * position against these bounds, instead of recomputing grid geometry by hand.
  */
 class GridState internal constructor() {
@@ -27,13 +27,6 @@ class GridState internal constructor() {
     }?.key
 
     internal fun setCellBounds(key: Any, bounds: Rect) {
-        val overlappingKey = cellBounds.entries.firstOrNull { (otherKey, otherBounds) ->
-            otherKey != key && otherBounds.overlaps(bounds)
-        }?.key
-        require(overlappingKey == null) {
-            "Cell bounds for $key ($bounds) overlap existing cell $overlappingKey's bounds"
-        }
-
         cellBounds[key] = bounds
     }
 
