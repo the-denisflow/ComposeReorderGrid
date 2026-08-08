@@ -5,13 +5,14 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import io.github.thedenisflow.reordergrid.draganddrop.grid.component.Grid
 
 @Composable
 fun rememberGridState(): GridState = remember { GridState() }
 
 /**
- * Tracks the current on-screen [Rect] of every tile in a [com.example.composereordergrid.presentation.draganddrop.grid.component.Grid], keyed by the same key passed to
- * [com.example.composereordergrid.presentation.draganddrop.grid.component.Grid]'s itemkey. [com.example.composereordergrid.presentation.draganddrop.grid.component.Grid] itself doesn't need this to draw or amimate tiles - it's here so a
+ * Tracks the current on-screen [Rect] of every tile in a [Grid], keyed by the same key passed to
+ * [Grid]'s itemkey. [Grid] itself doesn't need this to draw or amimate tiles - it's here so a
  * drag-and-drap layer can answer "which tile is currently under the pointer?" by comparing a touch
  * position against these bounds, instead of recomputing grid geometry by hand.
  */
