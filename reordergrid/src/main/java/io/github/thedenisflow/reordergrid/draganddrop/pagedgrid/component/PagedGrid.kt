@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import io.github.thedenisflow.reordergrid.draganddrop.DraggableArea
@@ -32,15 +33,16 @@ fun <T> PagedGrid(
         pageCount = { (tiles.size + itemsPerPage - 1) / itemsPerPage }
     )
     val pageFlipState = rememberPageFlipState(pagerState = pagerState)
+    val dragAndDropListener = remember(tiles) {
+        OnDragListener(
+            tiles = tiles,
+            identifier = tileKeyIdentifier
+        )
+    }
     val dragAndDropState = rememberDragAndDropState(
         gridState = gridState,
         pageFlipState = pageFlipState,
-        onMove = { fromKey, toKey -> OnDragListener<T>().onDrag(
-            fromKey = fromKey,
-            toKey = toKey,
-            tiles =  tiles,
-            identifier = { tileKeyIdentifier(it)}
-        ) }
+        dragAndDropListener = dragAndDropListener
     )
 
     DraggableArea(dragAndDropState) {

@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
+import io.github.thedenisflow.reordergrid.draganddrop.grid.contract.DragAndDropListener
 import io.github.thedenisflow.reordergrid.draganddrop.grid.state.GridState
 import io.github.thedenisflow.reordergrid.draganddrop.pagedgrid.usecase.PageFlipState
 import io.github.thedenisflow.reordergrid.draganddrop.tile.usecase.ComposeDragShadowBuilder
@@ -24,7 +25,7 @@ import io.github.thedenisflow.reordergrid.draganddrop.tile.usecase.ComposeDragSh
 @Composable
 fun rememberDragAndDropState(
     gridState: GridState,
-    onMove: (fromKey: Any, toKey: Any) -> Unit,
+    dragAndDropListener: DragAndDropListener,
     pageFlipState: PageFlipState? = null,
     density: Density = LocalDensity.current,
     layoutDirection: LayoutDirection = LocalLayoutDirection.current
@@ -32,7 +33,7 @@ fun rememberDragAndDropState(
     density = density,
     layoutDirection = layoutDirection,
     gridState = gridState,
-    onMove = onMove,
+    dragAndDropListener = dragAndDropListener,
     pageFlipState = pageFlipState,
     // Created here, above/outside any lazily-composed content (e.g. a pager), so it's never
     // disposed mid-drag - see the shadowLayer doc below for why that matters.
@@ -51,7 +52,7 @@ class DragAndDropState internal constructor(
     private val density: Density,
     private val layoutDirection: LayoutDirection,
     private val gridState: GridState,
-    private val onMove: (fromKey: Any, overKey: Any) -> Unit,
+    private val dragAndDropListener: DragAndDropListener,
     private val pageFlipState: PageFlipState? = null,
     internal val shadowLayer: GraphicsLayer
 ) : View.OnDragListener {
@@ -61,8 +62,6 @@ class DragAndDropState internal constructor(
         private set
 
     var dragItemKey: Any? by mutableStateOf(null)
-
-    private var lastDragOverKey: Any? = null
 
     lateinit var localView: View
 
@@ -83,8 +82,6 @@ class DragAndDropState internal constructor(
         Log.i(STATE_TAG, "startDrag, local bounds: $localBounds")
 
         dragItemKey = key
-        lastDragOverKey = null
-
 
         shadowLayer.record(
             density = density,
@@ -127,21 +124,16 @@ class DragAndDropState internal constructor(
                 val position = Offset(event.x, event.y)
                 val overKey = gridState.findKeyAt(position)
 
-                if (overKey != null && overKey != fromKey && overKey != lastDragOverKey) {
-                    Log.i(STATE_TAG, "onDrag, move: $fromKey to $overKey")
-
-                    onMove(fromKey, overKey)
-                    lastDragOverKey = overKey
-                } else if (overKey == null || overKey == fromKey) {
-                    lastDragOverKey = null
-                }
+                dragAndDropListener.onMove(
+                    fromKey, overKey
+                )
 
                 pageFlipState?.onDrag(position, localView.width, density)
             }
 
             DragEvent.ACTION_DRAG_ENDED -> {
                 dragItemKey = null
-                lastDragOverKey = null
+                dragAndDropListener.onDragEnded()
                 pageFlipState?.onDragEnded()
             }
         }

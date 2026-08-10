@@ -20,16 +20,17 @@ class OnDragListenerTest {
             TileData("Tile: 2", id = 2)
         )
 
-        listenerUnderTest = OnDragListener()
+        listenerUnderTest = OnDragListener(
+            tiles = tiles,
+            identifier = identifier
+        )
     }
 
     @Test
-    fun onDrag_whenDraggedIntoLaterKey_movesItemForward() {
-        listenerUnderTest.onDrag(
-            fromKey = 0,
-            toKey = 1,
-            tiles = tiles,
-            identifier = identifier
+    fun onMove_whenDraggedIntoLaterKey_movesItemForward() {
+        listenerUnderTest.onMove(
+            dragItemKey = 0,
+            dragOverItemKey = 1
         )
 
         assertEquals(
@@ -43,12 +44,10 @@ class OnDragListenerTest {
     }
 
     @Test
-    fun onDrag_whenDraggedIntoEarlyKey_movesItemBackward() {
-        listenerUnderTest.onDrag(
-            fromKey = 2,
-            toKey = 0,
-            tiles = tiles,
-            identifier = identifier
+    fun onMove_whenDraggedIntoEarlyKey_movesItemBackward() {
+        listenerUnderTest.onMove(
+            dragItemKey = 2,
+            dragOverItemKey = 0
         )
 
         assertEquals(
@@ -62,12 +61,10 @@ class OnDragListenerTest {
     }
 
     @Test
-    fun onDrag_whenFromKeyEqualsToKey_doesNothing() {
-        listenerUnderTest.onDrag(
-            fromKey = 1,
-            toKey = 1,
-            tiles = tiles,
-            identifier = identifier
+    fun onMove_whenFromKeyEqualsToKey_doesNothing() {
+        listenerUnderTest.onMove(
+            dragItemKey = 1,
+            dragOverItemKey = 1
         )
 
         assertEquals(
@@ -81,12 +78,10 @@ class OnDragListenerTest {
     }
 
     @Test
-    fun onDrag_whenFromKeyIsNotFound_doesNothing() {
-        listenerUnderTest.onDrag(
-            fromKey = -1,
-            toKey = 1,
-            tiles = tiles,
-            identifier = identifier
+    fun onMove_whenFromKeyIsNotFound_doesNothing() {
+        listenerUnderTest.onMove(
+            dragItemKey = -1,
+            dragOverItemKey = 1
         )
 
         assertEquals(
@@ -100,13 +95,46 @@ class OnDragListenerTest {
     }
 
     @Test
-    fun onDrag_whenToKeyIsNotFound_doesNothing() {
-        listenerUnderTest.onDrag(
-            fromKey = 0,
-            toKey = -1,
-            tiles = tiles,
-            identifier = identifier
+    fun onMove_whenToKeyIsNotFound_doesNothing() {
+        listenerUnderTest.onMove(
+            dragItemKey = 0,
+            dragOverItemKey = -1
         )
+
+        assertEquals(
+            listOf(
+                TileData("Tile: 0", id = 0),
+                TileData("Tile: 1", id = 1),
+                TileData("Tile: 2", id = 2)
+            ),
+            tiles,
+        )
+    }
+
+    @Test
+    fun onMove_whenDragOverKeyRepeats_isDedupedAndDoesNotMoveAgain() {
+        listenerUnderTest.onMove(dragItemKey = 0, dragOverItemKey = 1)
+        listenerUnderTest.onMove(dragItemKey = 0, dragOverItemKey = 1)
+
+        assertEquals(
+            listOf(
+                TileData("Tile: 1", id = 1),
+                TileData("Tile: 0", id = 0),
+                TileData("Tile: 2", id = 2)
+            ),
+            tiles,
+        )
+    }
+
+    @Test
+    fun onMove_afterOnDragEnded_sameItemAndDragOverKeyMovesAgain() {
+        listenerUnderTest.onMove(dragItemKey = 0, dragOverItemKey = 1)
+        listenerUnderTest.onDragEnded()
+
+        // A new drag gesture for the same item, landing on the same drag-over key the previous
+        // gesture ended on, must still trigger a move rather than being deduped against stale
+        // state left over from the prior gesture.
+        listenerUnderTest.onMove(dragItemKey = 0, dragOverItemKey = 1)
 
         assertEquals(
             listOf(
