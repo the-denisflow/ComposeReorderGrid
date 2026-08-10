@@ -18,8 +18,10 @@ import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.layer.GraphicsLayer
+import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInParent
@@ -148,6 +150,10 @@ private fun Modifier.dragShadowSource(
             if (getNeedsShadowCapture() && size.width > 0 && size.height > 0) {
                 itemGraphicsLayer.record(size) {
                     this@drawWithContent.drawContent()
+                }
+                // Bakes the layer's content now so it's not drawn later outside this draw pass.
+                clipRect(left = 0f, top =  0f, right =  0f, bottom = 0f) {
+                    drawLayer(itemGraphicsLayer)
                 }
                 setNeedsShadowCapture(false)
             }
